@@ -4,7 +4,6 @@
   <img src="https://img.shields.io/badge/version-2.0.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License">
   <img src="https://img.shields.io/badge/javascript-ES6+-yellow.svg" alt="JavaScript">
-  <img src="https://img.shields.io/badge/security-enterprise-red.svg" alt="Security">
 </p>
 
 **AntidebugJS** is a next-generation client-side protection system designed to prevent debugging, inspection, and reverse engineering of critical JavaScript applications.
