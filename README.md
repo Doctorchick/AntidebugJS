@@ -308,7 +308,12 @@ A: Add a `debugMode: true` option in configuration and create a development vers
 
 ## License
 
-This script is provided "as is" without warranty. Use at your own responsibility.
+![License: MIT (Non-Commercial)](https://img.shields.io/badge/license-MIT--NC-blue.svg)
+
+This script is distributed under a modified MIT license (non-commercial use only).  
+You are free to use, modify, and share it as long as it is **not for commercial purposes**.  
+Please give credit if you reuse the project. ❤️  
+Made by **SamK / Doctorchick**
 
 ## Contributing
 
@@ -317,12 +322,3 @@ To report bugs or suggest improvements, please create an issue or pull request.
 ---
 
 **Tip:** Start with the "Balanced" configuration and adjust according to your specific needs.
-
-## 📜 License
-
-![License: MIT (Non-Commercial)](https://img.shields.io/badge/license-MIT--NC-blue.svg)
-
-This script is distributed under a modified MIT license (non-commercial use only).  
-You are free to use, modify, and share it as long as it is **not for commercial purposes**.  
-Please give credit if you reuse the project. ❤️  
-Made by **SamK / Doctorchick**
