@@ -1,344 +1,676 @@
+/** Public API for manual configuration
+        configure: function(newConfig) {
+            Object.assign(AntidebugConfig, newConfig);
+            console.log('🔧 Configuration updated');
+        },
+
+        getStatus: function() {
+            return {
+                initialized: this.initialized,
+                securityLevel: AntidebugConfig.securityLevel,
+                detectionCount: this.detectionCount,
+                activeModules: Object.keys(AntidebugConfig.modules).filter(m => AntidebugConfig.modules[m])
+            };
+        }
+ * AntidebugJS - Advanced Anti-Debug Protection System
+ * Version: 2.0.0
+ * Author: Security Expert
+ * 
+ * A comprehensive client-side protection system against debugging,
+ * inspection, and reverse engineering attempts.
+ */
+
 (function() {
     'use strict';
-    
-    // Configuration
-    const CONFIG = {
-        redirectUrl: 'about:blank', // Votre page d'erreur
-        reloadOnTamper: true,        // true = reload, false = redirect
-        alertEnabled: false,         // Désactiver les alertes pour UX
-        consoleSpamInterval: 1000,   // Fréquence du spam console
-        devToolsCheckInterval: 500,  // Fréquence de vérification DevTools
-        performanceThreshold: 50     // Seuil de détection performance
+
+    // ============================================================================
+    // CONFIGURATION MODULE
+    // ============================================================================
+    const AntidebugConfig = {
+        // Security levels: 'Ultra', 'Balanced', 'Stealth'
+        securityLevel: 'Balanced', // Modify this to change protection level
+        
+        // Module toggles - Set to false to disable specific modules
+        modules: {
+            devtoolsDetection: true,
+            extensionDetection: true,
+            vmDetection: true,
+            integrityCheck: true,
+            obfuscation: true,
+            antiTampering: true
+        },
+        
+        // Reaction settings
+        reactions: {
+            redirect: true,
+            redirectUrl: 'https://google.com', // Where to redirect when detected
+            corruption: true,
+            consoleLure: true,
+            performanceDegradation: false // Set to true for performance attacks
+        },
+        
+        // Detection sensitivity (1-10, 10 = most sensitive)
+        sensitivity: {
+            devtools: 7,
+            timing: 8,
+            window: 6
+        },
+        
+        // Preset configurations
+        presets: {
+            Ultra: {
+                sensitivity: { devtools: 10, timing: 10, window: 9 },
+                reactions: { redirect: true, corruption: true, consoleLure: true, performanceDegradation: true }
+            },
+            Balanced: {
+                sensitivity: { devtools: 7, timing: 8, window: 6 },
+                reactions: { redirect: true, corruption: true, consoleLure: true, performanceDegradation: false }
+            },
+            Stealth: {
+                sensitivity: { devtools: 5, timing: 6, window: 4 },
+                reactions: { redirect: false, corruption: true, consoleLure: false, performanceDegradation: false }
+            }
+        }
     };
 
-    
-    let protectionState = {
-        devToolsOpen: false,
-        jsRunning: true,
-        originalHTML: '',
-        protectionActive: true,
-        intervals: []
+    // ============================================================================
+    // OBFUSCATION MODULE
+    // ============================================================================
+    const ObfuscationModule = {
+        // Generate random variable names
+        generateRandomName: function() {
+            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            let result = '';
+            for (let i = 0; i < Math.floor(Math.random() * 10) + 5; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        },
+
+        // Encrypt strings with simple XOR
+        encryptString: function(str, key = 42) {
+            return str.split('').map(char => 
+                String.fromCharCode(char.charCodeAt(0) ^ key)
+            ).join('');
+        },
+
+        decryptString: function(str, key = 42) {
+            return this.encryptString(str, key); // XOR is symmetric
+        },
+
+        // Obfuscate function names dynamically
+        obfuscatedNames: {},
+        
+        getObfuscatedName: function(originalName) {
+            if (!this.obfuscatedNames[originalName]) {
+                this.obfuscatedNames[originalName] = this.generateRandomName();
+            }
+            return this.obfuscatedNames[originalName];
+        }
     };
-    function createInterval(func, delay) {
-        const id = setInterval(func, delay);
-        protectionState.intervals.push(id);
-        return id;
-    }
-    function initializeUIProtection() {
-        const events = ['contextmenu', 'selectstart', 'dragstart'];
-        events.forEach(eventType => {
-            document.addEventListener(eventType, function(e) {
-                e.preventDefault();
-                return false;
-            });
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            const style = document.createElement('style');
-            style.textContent = `
-                * {
-                    -webkit-user-select: none !important;
-                    -moz-user-select: none !important;
-                    -ms-user-select: none !important;
-                    user-select: none !important;
-                    -webkit-touch-callout: none !important;
-                    -webkit-tap-highlight-color: transparent !important;
-                }
-                body {
-                    -webkit-user-drag: none !important;
-                    -khtml-user-drag: none !important;
-                    -moz-user-drag: none !important;
-                    -o-user-drag: none !important;
-                    user-drag: none !important;
-                }
-            `;
-            document.head.appendChild(style);
-        });
-    }
-    function initializeKeyboardProtection() {
-        document.addEventListener('keydown', function(e) {
-            if (e.keyCode === 123) {
-                e.preventDefault();
-                return false;
-            }
-            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
-                e.preventDefault();
-                return false;
-            }
-            if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
-                e.preventDefault();
-                return false;
-            }
-            if (e.ctrlKey && e.keyCode === 85) {
-                e.preventDefault();
-                return false;
-            }
-            if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
-                e.preventDefault();
-                return false;
-            }
-            if (e.ctrlKey && e.keyCode === 65) {
-                e.preventDefault();
-                return false;
-            }
-            if (e.ctrlKey && e.keyCode === 83) {
-                e.preventDefault();
-                return false;
-            }
-            if (e.keyCode === 116 && CONFIG.reloadOnTamper) {
-                e.preventDefault();
-                return false;
-            }
-        });
-    }
-    function detectDevToolsBySize() {
-        createInterval(function() {
-            const threshold = 160;
-            if (window.outerHeight - window.innerHeight > threshold || 
-                window.outerWidth - window.innerWidth > threshold) {
-                if (!protectionState.devToolsOpen) {
-                    protectionState.devToolsOpen = true;
-                    handleTamperDetection('DevTools détectés (taille)');
-                }
-            } else {
-                protectionState.devToolsOpen = false;
-            }
-        }, CONFIG.devToolsCheckInterval);
-    }
-    function detectDevToolsByPerformance() {
-        createInterval(function() {
-            const start = performance.now();
-            console.clear();
-            const end = performance.now();
+
+    // ============================================================================
+    // DETECTION MODULE - DevTools Detection
+    // ============================================================================
+    const DevToolsDetector = {
+        detectionMethods: [],
+        isDetected: false,
+
+        // Method 1: SourceMappingURL abuse
+        sourceMapDetection: function() {
+            const script = document.createElement('script');
+            script.innerHTML = `//# sourceMappingURL=data:application/json;base64,${btoa(JSON.stringify({
+                version: 3,
+                sources: [''],
+                names: [],
+                mappings: ''
+            }))}`;
+            document.head.appendChild(script);
+            document.head.removeChild(script);
             
-            if (end - start > CONFIG.performanceThreshold) {
-                handleTamperDetection('DevTools détectés (performance)');
+            // Check if DevTools processed the source map
+            return window.performance.getEntriesByType('navigation').length > 1;
+        },
+
+        // Method 2: Scope Pane getter trap (Chromium)
+        scopePaneDetection: function() {
+            let detected = false;
+            const obj = {};
+            
+            Object.defineProperty(obj, 'id', {
+                get: function() {
+                    detected = true;
+                    return 'trapped';
+                },
+                configurable: false
+            });
+
+            // Trigger scope inspection
+            console.dir(obj);
+            setTimeout(() => console.clear(), 10);
+            
+            return detected;
+        },
+
+        // Method 3: Performance timing detection
+        timingDetection: function() {
+            const start = performance.now();
+            
+            // Create a debug-sensitive operation
+            debugger;
+            
+            const end = performance.now();
+            const threshold = AntidebugConfig.sensitivity.timing;
+            
+            return (end - start) > threshold;
+        },
+
+        // Method 4: Window size detection
+        windowSizeDetection: function() {
+            const threshold = window.outerHeight - window.innerHeight > 160;
+            const ratio = (window.outerWidth / window.outerHeight);
+            
+            return threshold || ratio < 0.5 || ratio > 3;
+        },
+
+        // Method 5: Console detection
+        consoleDetection: function() {
+            let detected = false;
+            const originalLog = console.log;
+            
+            console.log = function() {
+                detected = true;
+                originalLog.apply(console, arguments);
+            };
+            
+            console.log('%c', '');
+            console.log = originalLog;
+            
+            return detected;
+        },
+
+        // Method 6: Function toString detection
+        functionToStringDetection: function() {
+            const nativeToString = Function.prototype.toString;
+            let detected = false;
+            
+            Function.prototype.toString = function() {
+                detected = true;
+                return nativeToString.apply(this, arguments);
+            };
+            
+            // Trigger toString call
+            setTimeout(function test() {}, 0).toString();
+            
+            Function.prototype.toString = nativeToString;
+            return detected;
+        },
+
+        runDetection: function() {
+            if (!AntidebugConfig.modules.devtoolsDetection) return false;
+            
+            const methods = [
+                this.sourceMapDetection,
+                this.scopePaneDetection,
+                this.timingDetection,
+                this.windowSizeDetection,
+                this.consoleDetection,
+                this.functionToStringDetection
+            ];
+
+            let detectionCount = 0;
+            methods.forEach(method => {
+                try {
+                    if (method.call(this)) {
+                        detectionCount++;
+                    }
+                } catch(e) {
+                    // Silently handle detection errors
+                }
+            });
+
+            // Require multiple positive detections for accuracy
+            this.isDetected = detectionCount >= 2;
+            return this.isDetected;
+        }
+    };
+
+    // ============================================================================
+    // EXTENSION DETECTION MODULE
+    // ============================================================================
+    const ExtensionDetector = {
+        knownExtensions: [
+            'react-devtools',
+            'redux-devtools',
+            'tampermonkey',
+            'greasemonkey',
+            'violentmonkey'
+        ],
+
+        detectReactDevTools: function() {
+            return !!(window.__REACT_DEVTOOLS_GLOBAL_HOOK__ || 
+                     document.querySelector('[data-reactroot]'));
+        },
+
+        detectReduxDevTools: function() {
+            return !!(window.__REDUX_DEVTOOLS_EXTENSION__ || 
+                     window.devToolsExtension);
+        },
+
+        detectTamperMonkey: function() {
+            return !!(window.GM_info || window.GM_setValue || 
+                     document.querySelector('script[src*="tampermonkey"]'));
+        },
+
+        detectUserScriptManagers: function() {
+            const managers = ['GM_info', 'GM_setValue', 'GM_getValue', 'unsafeWindow'];
+            return managers.some(manager => window[manager]);
+        },
+
+        runDetection: function() {
+            if (!AntidebugConfig.modules.extensionDetection) return false;
+
+            return this.detectReactDevTools() || 
+                   this.detectReduxDevTools() || 
+                   this.detectTamperMonkey() || 
+                   this.detectUserScriptManagers();
+        }
+    };
+
+    // ============================================================================
+    // VM DETECTION MODULE
+    // ============================================================================
+    const VMDetector = {
+        detectVM: function() {
+            if (!AntidebugConfig.modules.vmDetection) return false;
+
+            // Check for common VM indicators
+            const vmIndicators = [
+                navigator.userAgent.includes('HeadlessChrome'),
+                navigator.userAgent.includes('PhantomJS'),
+                navigator.userAgent.includes('SlimerJS'),
+                window.phantom !== undefined,
+                window._phantom !== undefined,
+                window.callPhantom !== undefined,
+                navigator.webdriver === true,
+                window.chrome && !window.chrome.runtime
+            ];
+
+            return vmIndicators.some(indicator => indicator);
+        },
+
+        detectAutomation: function() {
+            // Check for automation frameworks
+            return !!(window.webdriver || 
+                     navigator.webdriver || 
+                     window.chrome?.runtime?.onConnect ||
+                     document.querySelector('[webdriver]'));
+        },
+
+        runDetection: function() {
+            return this.detectVM() || this.detectAutomation();
+        }
+    };
+
+    // ============================================================================
+    // INTEGRITY CHECK MODULE
+    // ============================================================================
+    const IntegrityChecker = {
+        originalCode: null,
+        checksum: null,
+
+        calculateChecksum: function(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32-bit integer
             }
-        }, 2000);
-    }
-    function initializeAntiDebugger() {
-        function antiDebug() {
-            createInterval(function() {
-                (function() {
-                    try {
-                        debugger;
-                    } catch(e) {}
-                })();
+            return hash;
+        },
+
+        initializeChecksum: function() {
+            if (!AntidebugConfig.modules.integrityCheck) return;
+            
+            // Get current script content
+            const scripts = document.getElementsByTagName('script');
+            let scriptContent = '';
+            
+            for (let script of scripts) {
+                if (script.innerHTML.includes('AntidebugJS')) {
+                    scriptContent = script.innerHTML;
+                    break;
+                }
+            }
+            
+            this.originalCode = scriptContent;
+            this.checksum = this.calculateChecksum(scriptContent);
+        },
+
+        verifyIntegrity: function() {
+            if (!AntidebugConfig.modules.integrityCheck || !this.originalCode) return true;
+            
+            const scripts = document.getElementsByTagName('script');
+            let currentContent = '';
+            
+            for (let script of scripts) {
+                if (script.innerHTML.includes('AntidebugJS')) {
+                    currentContent = script.innerHTML;
+                    break;
+                }
+            }
+            
+            const currentChecksum = this.calculateChecksum(currentContent);
+            return currentChecksum === this.checksum;
+        }
+    };
+
+    // ============================================================================
+    // REACTION MODULE
+    // ============================================================================
+    const ReactionModule = {
+        // Redirect to specified URL
+        redirect: function() {
+            if (AntidebugConfig.reactions.redirect) {
+                setTimeout(() => {
+                    window.location.href = AntidebugConfig.reactions.redirectUrl;
+                }, Math.random() * 1000 + 500);
+            }
+        },
+
+        // Progressively corrupt the page
+        corruption: function() {
+            if (!AntidebugConfig.reactions.corruption) return;
+
+            let corruptionLevel = 0;
+            const corruptionInterval = setInterval(() => {
+                corruptionLevel++;
+                
+                // Progressive corruption techniques
+                if (corruptionLevel === 1) {
+                    // Hide random elements
+                    const elements = document.querySelectorAll('*');
+                    const randomElements = Array.from(elements)
+                        .sort(() => 0.5 - Math.random())
+                        .slice(0, Math.floor(elements.length * 0.1));
+                    
+                    randomElements.forEach(el => {
+                        if (Math.random() > 0.7) {
+                            el.style.visibility = 'hidden';
+                        }
+                    });
+                }
+                
+                if (corruptionLevel === 2) {
+                    // Slow down animations
+                    document.documentElement.style.cssText += `
+                        *, *::before, *::after {
+                            animation-duration: 10s !important;
+                            transition-duration: 5s !important;
+                        }
+                    `;
+                }
+                
+                if (corruptionLevel === 3) {
+                    // Add fake errors to console
+                    console.error('Uncaught ReferenceError: $ is not defined');
+                    console.error('Failed to load resource: net::ERR_CONNECTION_REFUSED');
+                }
+                
+                if (corruptionLevel >= 5) {
+                    clearInterval(corruptionInterval);
+                    this.redirect();
+                }
+                
+            }, 2000);
+        },
+
+        // Console lure with fake obfuscated code
+        consoleLure: function() {
+            if (!AntidebugConfig.reactions.consoleLure) return;
+
+            const fakeCode = [
+                ObfuscationModule.encryptString('var a=function(){return false;}'),
+                ObfuscationModule.encryptString('window.debug=null;'),
+                ObfuscationModule.encryptString('console.log=function(){}'),
+                '(function(){var _0x1234=[\'log\',\'warn\',\'error\'];})();',
+                'eval(atob(\'Y29uc29sZS5sb2cgPSBmdW5jdGlvbigpe307\'));'
+            ];
+
+            let lureInterval = setInterval(() => {
+                const randomCode = fakeCode[Math.floor(Math.random() * fakeCode.length)];
+                console.log(`%c${randomCode}`, 'color: #00ff00; font-family: monospace;');
+            }, 3000 + Math.random() * 2000);
+
+            // Stop after 30 seconds
+            setTimeout(() => clearInterval(lureInterval), 30000);
+        },
+
+        // Performance degradation attack
+        performanceDegradation: function() {
+            if (!AntidebugConfig.reactions.performanceDegradation) return;
+
+            // Create memory leaks
+            let memoryLeak = [];
+            setInterval(() => {
+                for (let i = 0; i < 1000; i++) {
+                    memoryLeak.push(new Array(1000).fill(Math.random()));
+                }
+                if (memoryLeak.length > 10000) {
+                    memoryLeak = memoryLeak.slice(5000); // Keep some references
+                }
             }, 100);
+
+            // CPU intensive operations
+            setInterval(() => {
+                const start = Date.now();
+                while (Date.now() - start < 10) {
+                    Math.random() * Math.random();
+                }
+            }, 50);
+        },
+
+        executeReaction: function() {
+            console.warn('🔒 Antidebug Protection Activated');
+            
+            // Execute reactions based on configuration
+            this.consoleLure();
+            
+            setTimeout(() => {
+                this.corruption();
+            }, 1000);
+            
+            setTimeout(() => {
+                this.performanceDegradation();
+            }, 2000);
+            
+            setTimeout(() => {
+                this.redirect();
+            }, 5000);
         }
-        for (let i = 0; i < 3; i++) {
-            setTimeout(antiDebug, i * 100);
+    };
+
+    // ============================================================================
+    // ANTI-TAMPERING MODULE
+    // ============================================================================
+    const AntiTamperingModule = {
+        protectedFunctions: new Map(),
+
+        protectFunction: function(obj, funcName) {
+            if (!AntidebugConfig.modules.antiTampering) return;
+
+            const originalFunc = obj[funcName];
+            if (!originalFunc) return;
+
+            this.protectedFunctions.set(funcName, originalFunc);
+
+            Object.defineProperty(obj, funcName, {
+                get: function() {
+                    return originalFunc;
+                },
+                set: function(newValue) {
+                    console.warn(`🚫 Tampering detected on ${funcName}`);
+                    ReactionModule.executeReaction();
+                    return originalFunc;
+                },
+                configurable: false,
+                enumerable: true
+            });
+        },
+
+        protectConsole: function() {
+            const consoleMethods = ['log', 'warn', 'error', 'debug', 'info', 'clear'];
+            consoleMethods.forEach(method => {
+                this.protectFunction(console, method);
+            });
+        },
+
+        protectGlobalFunctions: function() {
+            const globalFunctions = ['eval', 'setTimeout', 'setInterval'];
+            globalFunctions.forEach(func => {
+                this.protectFunction(window, func);
+            });
+        },
+
+        initialize: function() {
+            this.protectConsole();
+            this.protectGlobalFunctions();
         }
-    }
-    function detectBreakpoints() {
-        createInterval(function() {
-            const start = performance.now();
-            let dummy = 0;
-            for (let i = 0; i < 10000; i++) {
-                dummy += Math.random() * i;
+    };
+
+    // ============================================================================
+    // MAIN ANTIDEBUG CONTROLLER
+    // ============================================================================
+    const AntidebugJS = {
+        initialized: false,
+        detectionCount: 0,
+        maxDetections: 3,
+
+        applyPreset: function(presetName) {
+            if (AntidebugConfig.presets[presetName]) {
+                const preset = AntidebugConfig.presets[presetName];
+                AntidebugConfig.sensitivity = { ...AntidebugConfig.sensitivity, ...preset.sensitivity };
+                AntidebugConfig.reactions = { ...AntidebugConfig.reactions, ...preset.reactions };
+                console.log(`🔧 Applied ${presetName} security preset`);
+            }
+        },
+
+        runDetection: function() {
+            const detectionResults = {
+                devtools: DevToolsDetector.runDetection(),
+                extensions: ExtensionDetector.runDetection(),
+                vm: VMDetector.runDetection(),
+                integrity: !IntegrityChecker.verifyIntegrity()
+            };
+
+            const detectedThreats = Object.keys(detectionResults).filter(key => detectionResults[key]);
+            
+            if (detectedThreats.length > 0) {
+                this.detectionCount++;
+                console.warn(`⚠️ Threats detected: ${detectedThreats.join(', ')}`);
+                
+                if (this.detectionCount >= this.maxDetections) {
+                    ReactionModule.executeReaction();
+                    return true;
+                }
+            }
+
+            return false;
+        },
+
+        continuousMonitoring: function() {
+            // Run detection every few seconds with random intervals
+            const baseInterval = 3000;
+            const randomOffset = Math.random() * 2000;
+            
+            setTimeout(() => {
+                if (!this.runDetection()) {
+                    this.continuousMonitoring();
+                }
+            }, baseInterval + randomOffset);
+        },
+
+        initialize: function(config = {}) {
+            if (this.initialized) return;
+            
+            console.log('🛡️ AntidebugJS Initializing...');
+            
+            // Apply custom configuration
+            Object.assign(AntidebugConfig, config);
+            
+            // Apply preset if specified
+            if (AntidebugConfig.securityLevel && AntidebugConfig.presets[AntidebugConfig.securityLevel]) {
+                this.applyPreset(AntidebugConfig.securityLevel);
             }
             
-            const end = performance.now();
-            
-            if (end - start > CONFIG.performanceThreshold) {
-                handleTamperDetection('Breakpoint détecté');
+            // Initialize modules
+            if (AntidebugConfig.modules.obfuscation) {
+                // Generate obfuscated names for critical functions
+                ObfuscationModule.getObfuscatedName('detectDevTools');
+                ObfuscationModule.getObfuscatedName('executeReaction');
             }
-        }, 3000);
+            
+            if (AntidebugConfig.modules.integrityCheck) {
+                IntegrityChecker.initializeChecksum();
+            }
+            
+            if (AntidebugConfig.modules.antiTampering) {
+                AntiTamperingModule.initialize();
+            }
+            
+            // Start continuous monitoring
+            this.continuousMonitoring();
+            
+            // Initial detection run
+            setTimeout(() => this.runDetection(), 1000);
+            
+            this.initialized = true;
+            console.log('✅ AntidebugJS Active - Protection Level:', AntidebugConfig.securityLevel);
+        },
+
+        // Public API for manual configuration
+        configure: function(newConfig) {
+            Object.assign(FortressConfig, newConfig);
+            console.log('🔧 Configuration updated');
+        },
+
+        getStatus: function() {
+            return {
+                initialized: this.initialized,
+                securityLevel: FortressConfig.securityLevel,
+                detectionCount: this.detectionCount,
+                activeModules: Object.keys(FortressConfig.modules).filter(m => FortressConfig.modules[m])
+            };
+        }
+    };
+
+    // ============================================================================
+    // AUTO-INITIALIZATION
+    // ============================================================================
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => AntidebugJS.initialize());
+    } else {
+        AntidebugJS.initialize();
     }
 
-    function protectGlobalProperties() {
-        try {
-            Object.defineProperty(window, 'isProtected', {
-                get: function() { return true; },
-                set: function() { 
-                    handleTamperDetection('Tentative de modification de propriété');
-                    return true;
-                },
-                configurable: false
-            });
-            const originalConsole = window.console;
-            Object.defineProperty(window, 'console', {
-                get: function() { return originalConsole; },
-                set: function() { 
-                    handleTamperDetection('Tentative de modification de console');
-                    return originalConsole;
-                },
-                configurable: false
-            });
-        } catch(e) {
+    // Handle page visibility changes
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            AntidebugJS.runDetection();
         }
-    }
-    function initializeConsoleSpam() {
-        const spamInterval = createInterval(function() {
-            if (typeof console !== 'undefined') {
-                console.clear();
-                console.log('%c🛡️ ACCÈS REFUSÉ', 'color: #ff3333; font-size: 30px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);');
-                console.log('%c' + '█'.repeat(100), 'color: #ff3333; font-weight: bold;');
-                console.log('%c🚫 DEBUG INTERDIT - PROTECTION ACTIVE 🚫', 'color: #ff6666; font-size: 18px; font-weight: bold;');
-                console.log('%c' + '█'.repeat(100), 'color: #ff3333; font-weight: bold;');
-                const messages = [
-                    'Surveillance active...',
-                    'Tentative de debug détectée',
-                    'Accès non autorisé',
-                    'Protection renforcée'
-                ];
-                const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-                console.log('%c' + randomMsg, 'color: #ffaa33; font-size: 14px;');
-            }
-        }, CONFIG.consoleSpamInterval);
-        
-        return spamInterval;
-    }
-    function obfuscateFunctions() {
-        const sensitiveKeywords = ['detectDevTools', 'antiDebug', 'protection', 'breakpoint'];
-        const originalToString = Function.prototype.toString;
-        
-        Function.prototype.toString = function() {
-            const funcString = originalToString.call(this);
-            if (sensitiveKeywords.some(keyword => funcString.includes(keyword))) {
-                return 'function() { [Code Protégé] }';
-            }
-            
-            return funcString;
+    });
+
+    // Expose limited API to window (can be disabled for stealth mode)
+    if (AntidebugConfig.securityLevel !== 'Stealth') {
+        window.AntidebugJS = {
+            configure: AntidebugJS.configure.bind(AntidebugJS),
+            getStatus: AntidebugJS.getStatus.bind(AntidebugJS),
+            version: '2.0.0'
         };
     }
-    function initializeDOMIntegrity() {
-        document.addEventListener('DOMContentLoaded', function() {
-            protectionState.originalHTML = document.documentElement.outerHTML;
-        });
-        createInterval(function() {
-            if (protectionState.originalHTML && 
-                document.documentElement.outerHTML !== protectionState.originalHTML) {
-            }
-        }, 10000);
-    }
 
-    function detectToolsAndExtensions() {
-        createInterval(function() {
-            if (window.console && window.console.firebug) {
-                handleTamperDetection('Firebug détecté');
-            }
-
-            if (window.chrome && (window.chrome.extension || window.chrome.runtime)) {
-                console.warn('Extension détectée');
-            }
-
-            if (window.devtools || window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
-                handleTamperDetection('Outils de développement détectés');
-            }
-        }, 5000);
-    }
-    function monitorJavaScriptStatus() {
-        protectionState.jsRunning = true;
-        
-        const jsCheck = createInterval(function() {
-            protectionState.jsRunning = true;
-        }, 500);
-        
-        setTimeout(function() {
-            if (!protectionState.jsRunning) {
-                document.body.innerHTML = `
-                    <div style="
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: white;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: center;
-                        align-items: center;
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        z-index: 999999;
-                    ">
-                        <div style="text-align: center; padding: 2rem;">
-                            <h1 style="font-size: 3rem; margin-bottom: 1rem;">⚠️</h1>
-                            <h2 style="font-size: 2rem; margin-bottom: 1rem;">JavaScript Requis</h2>
-                            <p style="font-size: 1.2rem; opacity: 0.9;">
-                                Cette page nécessite JavaScript pour fonctionner correctement.<br>
-                                Veuillez activer JavaScript dans votre navigateur.
-                            </p>
-                        </div>
-                    </div>
-                `;
-            }
-        }, 3000);
-    }
-    function handleTamperDetection(reason) {
-        console.warn('Protection déclenchée:', reason);
-        
-        if (CONFIG.alertEnabled) {
-            setTimeout(() => alert('Page protégée contre le debug'), 100);
-        }
-        
-        if (CONFIG.reloadOnTamper) {
-            setTimeout(() => window.location.reload(), 500);
-        } else {
-            setTimeout(() => window.location.href = CONFIG.redirectUrl, 500);
-        }
-    }
-    function executeObfuscatedCode() {
-        const obscuredCodes = [
-            btoa(`
-                setInterval(function() {
-                    if (window.console && typeof window.console.profiles !== 'undefined') {
-                        handleTamperDetection('Console profiling détecté');
-                    }
-                }, 2000);
-            `),
-            btoa(`
-                if (window.outerHeight < 100 || window.outerWidth < 100) {
-                    handleTamperDetection('Fenêtre trop petite - debug suspecté');
-                }
-            `)
-        ];
-        
-        obscuredCodes.forEach((code, index) => {
-            try {
-                setTimeout(() => eval(atob(code)), index * 1000);
-            } catch(e) {
-                console.log('Erreur décodage code', index);
-            }
-        });
-    }
-    function cleanup() {
-        protectionState.intervals.forEach(id => clearInterval(id));
-        protectionState.intervals = [];
-    }
-
-    function initialize() {
-        console.clear();
-        console.log('%c SYSTÈME DE PROTECTION ACTIF', 'color: #ff6b6b; font-size: 18px; font-weight: bold;');
-        console.log('%cProtection anti-debug initialisée', 'color: #ffa726; font-size: 14px;');
-        
-        initializeUIProtection();
-        initializeKeyboardProtection();
-        detectDevToolsBySize();
-        detectDevToolsByPerformance();
-        initializeAntiDebugger();
-        detectBreakpoints();
-        protectGlobalProperties();
-        initializeConsoleSpam();
-        obfuscateFunctions();
-        initializeDOMIntegrity();
-        detectToolsAndExtensions();
-        monitorJavaScriptStatus();
-        executeObfuscatedCode();
-        
-        if (CONFIG.alertEnabled) {
-            setTimeout(() => alert('Protection activé'), 1000);
-        }
-        
-        window.addEventListener('beforeunload', cleanup);
-        
-        console.log('%c Protection complètement initialisée', 'color: #4caf50; font-weight: bold;');
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initialize);
-    } else {
-        initialize();
-    }
+    console.log('%c🔒 AntidebugJS 2.0.0 Loaded', 'color: #ff6b35; font-weight: bold; font-size: 14px;');
 
 })();
