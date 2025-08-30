@@ -1,15 +1,15 @@
 /**
- * AntidebugJS++ Production Bundle
- * Military Grade Anti-Debug System - Complete Package
- * Version: 2.0.0
+ * AntidebugJS++ v4.0.0 - Military Grade Anti-Debug System
+ * Reorganized architecture with centralized configuration
  * 
  * Usage:
- * <script src="antidebug-plus.bundle.js"></script>
+ * <script src="antidebug-plus-v4.bundle.js"></script>
  * <script>
  *   const antidebug = new AntidebugJS({
  *     serverEndpoint: '/api/antidebug',
  *     clientId: 'my-app',
- *     aggressiveMode: true
+ *     aggressiveMode: true,
+ *     enableBlockInspect: true
  *   });
  * </script>
  */
@@ -17,19 +17,125 @@
 (function(global, factory) {
     'use strict';
     if (typeof module === 'object' && typeof module.exports === 'object') {
-        // CommonJS
         module.exports = factory();
     } else if (typeof define === 'function' && define.amd) {
-        // AMD
         define(factory);
     } else {
-        // Browser globals
         global.AntidebugJS = factory();
     }
 })(typeof window !== 'undefined' ? window : this, function() {
     'use strict';
     
-    // Encrypted module loader
+    // ========================================
+    // CONFIGURATION & CONSTANTS
+    // ========================================
+    
+    const DEFAULT_CONFIG = {
+        // Server communication
+        serverEndpoint: '/api/antidebug',
+        clientId: 'default',
+        
+        // Protection modes
+        aggressiveMode: true,
+        stealthMode: true,
+        enableWasm: true,
+        enableFingerprinting: true,
+        enableBlockInspect: true,
+        
+        // BlockInspect specific settings
+        blockInspectConfig: {
+            destroyUrl: 'https://www.kurugane.com/error.html',
+            blurEffect: true,
+            windowSizeThreshold: 150,
+            consoleTimingThreshold: 50,
+            debuggerTimingThreshold: 50,
+            checkInterval: 500,
+            consoleCheckInterval: 1000,
+            debuggerCheckInterval: 1000
+        },
+        
+        // Behavioral settings
+        blockRightClick: true,
+        blockKeyboardShortcuts: true,
+        blockTextSelection: true,
+        preventErrorDisplay: true,
+        
+        // Detection intervals
+        mutationInterval: 30000,
+        checkInterval: 5000,
+        
+        // Security thresholds
+        maxDetections: 10,
+        performanceThreshold: 100,
+        
+        // Auto-start
+        autoStart: true,
+        
+        // Callbacks
+        onDetection: null,
+        onCompromised: null,
+        onError: null,
+        onBlockInspectTrigger: null,
+        
+        // Countermeasures
+        safeRedirectUrl: '/',
+        enableCountermeasures: true
+    };
+    
+    const THREAT_SIGNATURES = {
+        // Injection tools
+        INJECTION_TOOLS: [
+            'GM_info', 'GM_setValue', 'GM_getValue', 'unsafeWindow', 'GM_xmlhttpRequest',
+            'GM_addStyle', 'GM_getResourceText', 'GM_getResourceURL', 'GM_notification',
+            'chrome.extension', 'chrome.runtime', 'browser.extension', 'browser.runtime',
+            'moz-extension', 'chrome-extension', 'safari-extension'
+        ],
+        
+        // Automation tools
+        AUTOMATION_TOOLS: [
+            '__nightmare', '__phantomjs', '__selenium', 'webdriver', '_Selenium_IDE_Recorder',
+            'callSelenium', '_selenium', 'callPhantom', '_phantom', 'spawn', 'emit', 'Buffer'
+        ],
+        
+        // Suspicious user agents
+        SUSPICIOUS_UA: ['headless', 'phantom', 'selenium', 'nightmare', 'puppeteer'],
+        
+        // VM indicators
+        VM_RESOLUTIONS: ['1024x768', '1152x864', '1280x800', '1280x1024', '1400x1050'],
+        
+        // Key combinations to block
+        FORBIDDEN_KEYS: [
+            { key: 'F12' },
+            { key: 'I', ctrl: true, shift: true },
+            { key: 'J', ctrl: true, shift: true },
+            { key: 'C', ctrl: true, shift: true },
+            { key: 'U', ctrl: true },
+            { key: 'S', ctrl: true }
+        ]
+    };
+    
+    const COUNTERMEASURE_ACTIONS = {
+        SESSION_KILL: 'session_kill',
+        REDIRECT_TRAP: 'redirect_trap',
+        CPU_FLOOD: 'cpu_flood',
+        FREEZE: 'freeze',
+        DIVERSION: 'diversion',
+        SELF_HEAL: 'self_heal',
+        COMPROMISE: 'compromise',
+        BLOCK_INSPECT: 'block_inspect'
+    };
+    
+    const SEVERITY_LEVELS = {
+        LOW: 'low',
+        MEDIUM: 'medium',
+        HIGH: 'high',
+        CRITICAL: 'critical'
+    };
+    
+    // ========================================
+    // CRYPTO UTILITIES
+    // ========================================
+    
     const CryptoUtils = {
         key: null,
         
@@ -63,10 +169,157 @@
                 decrypted += String.fromCharCode(dataChar ^ keyChar);
             }
             return decrypted;
+        },
+        
+        hash(str) {
+            let hash = 0;
+            if (str.length === 0) return hash;
+            
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            
+            return Math.abs(hash).toString(36);
         }
     };
     
-    // Advanced fingerprinting
+    // ========================================
+    // BLOCK INSPECT MODULE
+    // ========================================
+    
+    const BlockInspectModule = {
+        detected: false,
+        config: null,
+        callbacks: {},
+        
+        init(config, callbacks = {}) {
+            this.config = config;
+            this.callbacks = callbacks;
+            this.deploy();
+        },
+        
+        deploy() {
+            if (!this.config.enableBlockInspect) return;
+            
+            this.setupEventListeners();
+            this.startMonitoring();
+        },
+        
+        destroyPage() {
+            if (this.detected) return;
+            this.detected = true;
+            
+            // Trigger callback
+            if (this.callbacks.onTrigger) {
+                this.callbacks.onTrigger('block_inspect_triggered', 'Page destruction initiated');
+            }
+            
+            // Apply blur effect
+            if (this.config.blockInspectConfig.blurEffect) {
+                document.body.style.filter = 'blur(20px)';
+                document.body.style.transition = 'filter 0.3s ease';
+            }
+            
+            // Clear content
+            setTimeout(() => {
+                document.body.innerHTML = '';
+            }, 100);
+            
+            // Redirect
+            setTimeout(() => {
+                window.location.href = this.config.blockInspectConfig.destroyUrl;
+            }, 200);
+        },
+        
+        checkWindowSize() {
+            const threshold = this.config.blockInspectConfig.windowSizeThreshold;
+            if (window.outerHeight - window.innerHeight > threshold || 
+                window.outerWidth - window.innerWidth > threshold) {
+                this.destroyPage();
+            }
+        },
+        
+        checkConsole() {
+            const start = Date.now();
+            console.log('%c', 'color: transparent');
+            if (Date.now() - start > this.config.blockInspectConfig.consoleTimingThreshold) {
+                this.destroyPage();
+            }
+        },
+        
+        checkDebugger() {
+            const start = Date.now();
+            debugger;
+            if (Date.now() - start > this.config.blockInspectConfig.debuggerTimingThreshold) {
+                this.destroyPage();
+            }
+        },
+        
+        setupEventListeners() {
+            // Disable right-click
+            if (this.config.blockRightClick) {
+                document.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    this.destroyPage();
+                });
+            }
+            
+            // Disable keyboard shortcuts
+            if (this.config.blockKeyboardShortcuts) {
+                document.addEventListener('keydown', (e) => {
+                    const forbidden = THREAT_SIGNATURES.FORBIDDEN_KEYS.some(combo => 
+                        e.key === combo.key && 
+                        (!combo.ctrl || e.ctrlKey) && 
+                        (!combo.shift || e.shiftKey) &&
+                        (!combo.alt || e.altKey)
+                    );
+                    
+                    if (forbidden) {
+                        e.preventDefault();
+                        this.destroyPage();
+                    }
+                });
+            }
+            
+            // Prevent text selection
+            if (this.config.blockTextSelection) {
+                document.addEventListener('selectstart', (e) => {
+                    e.preventDefault();
+                });
+            }
+            
+            // Hide errors
+            if (this.config.preventErrorDisplay) {
+                window.addEventListener('error', (e) => {
+                    e.preventDefault();
+                    return true;
+                });
+            }
+        },
+        
+        startMonitoring() {
+            // Window size monitoring
+            setInterval(() => this.checkWindowSize(), this.config.blockInspectConfig.checkInterval);
+            
+            // Console monitoring
+            setInterval(() => this.checkConsole(), this.config.blockInspectConfig.consoleCheckInterval);
+            
+            // Debugger monitoring
+            setInterval(() => this.checkDebugger(), this.config.blockInspectConfig.debuggerCheckInterval);
+        },
+        
+        stop() {
+            this.detected = false;
+            // Note: Intervals would need to be stored to be cleared properly
+        }
+    };
+    
+    // ========================================
+    // FINGERPRINTING ENGINE
+    // ========================================
+    
     const FingerprintEngine = {
         async generate() {
             const components = await Promise.all([
@@ -81,7 +334,7 @@
             ]);
             
             const combined = components.join('|');
-            return this.hash(combined);
+            return CryptoUtils.hash(combined);
         },
         
         getCanvasFingerprint() {
@@ -95,7 +348,7 @@
                 
                 ctx.fillStyle = '#069';
                 ctx.font = '11pt Arial';
-                ctx.fillText('AntidebugJS++ fingerprint', 2, 15);
+                ctx.fillText('AntidebugJS++ v4.0.0 fingerprint', 2, 15);
                 
                 ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
                 ctx.font = '18pt Arial';
@@ -110,18 +363,15 @@
         getWebGLFingerprint() {
             try {
                 const canvas = document.createElement('canvas');
-                const gl = canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                const gl = canvas.getContext('webgl2') || 
+                          canvas.getContext('webgl') || 
+                          canvas.getContext('experimental-webgl');
                 
                 if (!gl) return 'webgl_not_supported';
                 
                 const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
                 const vendor = gl.getParameter(debugInfo?.UNMASKED_VENDOR_WEBGL || gl.VENDOR);
                 const renderer = gl.getParameter(debugInfo?.UNMASKED_RENDERER_WEBGL || gl.RENDERER);
-                
-                const buffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-                const vertices = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
-                gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
                 
                 return `${vendor}|${renderer}|${gl.getSupportedExtensions().join(',')}`;
             } catch (e) {
@@ -139,8 +389,8 @@
                 
                 oscillator.type = 'triangle';
                 oscillator.frequency.value = 10000;
-                
                 gainNode.gain.value = 0;
+                
                 oscillator.connect(analyser);
                 analyser.connect(scriptProcessor);
                 scriptProcessor.connect(gainNode);
@@ -228,23 +478,13 @@
                 navigator.languages.join(','),
                 navigator.userAgent.length
             ].join('|');
-        },
-        
-        hash(str) {
-            let hash = 0;
-            if (str.length === 0) return hash;
-            
-            for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // Convert to 32bit integer
-            }
-            
-            return Math.abs(hash).toString(36);
         }
     };
     
-    // WebAssembly protection module
+    // ========================================
+    // WEBASSEMBLY PROTECTION
+    // ========================================
+    
     const WasmProtection = {
         module: null,
         
@@ -271,17 +511,14 @@
         },
         
         xor(a, b) {
-            if (this.module) {
-                return this.module.instance.exports.xor(a, b);
-            }
-            return a ^ b;
+            return this.module ? this.module.instance.exports.xor(a, b) : a ^ b;
         },
         
         fibonacci(n) {
             if (this.module) {
                 return this.module.instance.exports.fibonacci(n);
             }
-            // Fallback JS implementation
+            
             if (n < 2) return n;
             let a = 0, b = 1;
             for (let i = 2; i <= n; i++) {
@@ -291,7 +528,10 @@
         }
     };
     
-    // Advanced detection algorithms
+    // ========================================
+    // DETECTION ENGINE
+    // ========================================
+    
     const DetectionEngine = {
         async detectDevToolsAdvanced() {
             const checks = [];
@@ -300,7 +540,12 @@
             const start = performance.now();
             debugger;
             const end = performance.now();
-            checks.push({ type: 'timing', value: end - start, threshold: 100 });
+            checks.push({ 
+                type: 'timing', 
+                value: end - start, 
+                threshold: 100,
+                suspicious: (end - start) > 100
+            });
             
             // Console detection via toString
             let consoleDetected = false;
@@ -313,7 +558,7 @@
             });
             console.log(element);
             console.clear();
-            checks.push({ type: 'console_toString', value: consoleDetected });
+            checks.push({ type: 'console_toString', value: consoleDetected, suspicious: consoleDetected });
             
             // Window dimension analysis
             const widthDiff = window.outerWidth - window.innerWidth;
@@ -348,36 +593,34 @@
         },
         
         detectInjectionTools() {
-            const signatures = [
-                // Tampermonkey/Greasemonkey
-                'GM_info', 'GM_setValue', 'GM_getValue', 'unsafeWindow', 'GM_xmlhttpRequest',
-                'GM_addStyle', 'GM_getResourceText', 'GM_getResourceURL', 'GM_notification',
-                
-                // Browser extensions
-                'chrome.extension', 'chrome.runtime', 'browser.extension', 'browser.runtime',
-                'moz-extension', 'chrome-extension', 'safari-extension',
-                
-                // Debug tools
-                '__nightmare', '__phantomjs', '__selenium', 'webdriver', '_Selenium_IDE_Recorder',
-                'callSelenium', '_selenium', 'callPhantom', '_phantom',
-                
-                // Other tools
-                'spawn', 'emit', 'Buffer', '__proto__'
-            ];
-            
             const detected = [];
             
-            signatures.forEach(signature => {
+            THREAT_SIGNATURES.INJECTION_TOOLS.forEach(signature => {
                 try {
                     if (window[signature] !== undefined) {
-                        detected.push({ type: 'global_property', signature, value: typeof window[signature] });
+                        detected.push({ 
+                            type: 'global_property', 
+                            signature, 
+                            value: typeof window[signature],
+                            suspicious: true
+                        });
                     }
                     
                     if (document.documentElement.getAttribute(signature)) {
-                        detected.push({ type: 'dom_attribute', signature, value: true });
+                        detected.push({ 
+                            type: 'dom_attribute', 
+                            signature, 
+                            value: true,
+                            suspicious: true
+                        });
                     }
                 } catch (e) {
-                    detected.push({ type: 'access_error', signature, error: e.message });
+                    detected.push({ 
+                        type: 'access_error', 
+                        signature, 
+                        error: e.message,
+                        suspicious: true
+                    });
                 }
             });
             
@@ -395,11 +638,20 @@
                     if (func && typeof func === 'function') {
                         const funcStr = func.toString();
                         if (!funcStr.includes('[native code]')) {
-                            detected.push({ type: 'modified_native', property: prop, suspicious: true });
+                            detected.push({ 
+                                type: 'modified_native', 
+                                property: prop, 
+                                suspicious: true
+                            });
                         }
                     }
                 } catch (e) {
-                    detected.push({ type: 'native_check_error', property: prop, error: e.message });
+                    detected.push({ 
+                        type: 'native_check_error', 
+                        property: prop, 
+                        error: e.message,
+                        suspicious: true
+                    });
                 }
             });
             
@@ -410,13 +662,11 @@
             const checks = [];
             
             // Screen resolution analysis
-            const commonVMResolutions = [
-                '1024x768', '1152x864', '1280x800', '1280x1024', '1400x1050'
-            ];
             const currentRes = `${screen.width}x${screen.height}`;
             checks.push({
                 type: 'vm_resolution',
-                suspicious: commonVMResolutions.includes(currentRes)
+                value: currentRes,
+                suspicious: THREAT_SIGNATURES.VM_RESOLUTIONS.includes(currentRes)
             });
             
             // Hardware concurrency
@@ -464,78 +714,49 @@
             // Webdriver detection
             checks.push({
                 type: 'webdriver_property',
-                detected: navigator.webdriver === true
+                detected: navigator.webdriver === true,
+                suspicious: navigator.webdriver === true
             });
             
-            // Window properties
-            const automationProps = [
-                'callPhantom', '_phantom', '__nightmare', '__selenium',
-                'spawn', 'emit', 'webdriver', 'domAutomation'
-            ];
-            
-            automationProps.forEach(prop => {
+            // Automation properties
+            THREAT_SIGNATURES.AUTOMATION_TOOLS.forEach(prop => {
                 if (window[prop]) {
                     checks.push({
                         type: 'automation_property',
                         property: prop,
-                        detected: true
+                        detected: true,
+                        suspicious: true
                     });
                 }
             });
             
             // User agent analysis
-            const suspiciousUA = [
-                'headless', 'phantom', 'selenium', 'nightmare', 'puppeteer'
-            ];
-            
             const userAgent = navigator.userAgent.toLowerCase();
-            suspiciousUA.forEach(pattern => {
+            THREAT_SIGNATURES.SUSPICIOUS_UA.forEach(pattern => {
                 if (userAgent.includes(pattern)) {
                     checks.push({
                         type: 'suspicious_useragent',
                         pattern,
-                        detected: true
+                        detected: true,
+                        suspicious: true
                     });
                 }
             });
-            
-            // Mouse movement analysis
-            let mouseEvents = 0;
-            const mouseListener = () => mouseEvents++;
-            document.addEventListener('mousemove', mouseListener);
-            
-            setTimeout(() => {
-                document.removeEventListener('mousemove', mouseListener);
-                checks.push({
-                    type: 'mouse_activity',
-                    events: mouseEvents,
-                    suspicious: mouseEvents === 0
-                });
-            }, 5000);
             
             return checks;
         }
     };
     
-    // Main AntidebugJS class
+    // ========================================
+    // MAIN ANTIDEBUGJS CLASS
+    // ========================================
+    
     class AntidebugJS {
-        constructor(config = {}) {
-            this.config = {
-                serverEndpoint: config.serverEndpoint || '/api/antidebug',
-                clientId: config.clientId || 'default',
-                aggressiveMode: config.aggressiveMode || false,
-                stealthMode: config.stealthMode || true,
-                enableWasm: config.enableWasm || true,
-                enableFingerprinting: config.enableFingerprinting !== false,
-                mutationInterval: config.mutationInterval || 30000,
-                checkInterval: config.checkInterval || 5000,
-                maxDetections: config.maxDetections || 10,
-                autoStart: config.autoStart !== false,
-                onDetection: config.onDetection || null,
-                onCompromised: config.onCompromised || null,
-                ...config
-            };
+        constructor(userConfig = {}) {
+            // Merge user config with defaults
+            this.config = this.mergeConfig(DEFAULT_CONFIG, userConfig);
             
+            // Initialize state
             this.state = {
                 sessionId: this.generateSessionId(),
                 fingerprint: '',
@@ -546,15 +767,33 @@
                 lastMutation: Date.now()
             };
             
+            // Initialize collections
             this.detectionHistory = [];
             this.originalFunctions = new Map();
             this.protectedModules = new Map();
             this.intervals = new Set();
             this.eventListeners = new Map();
             
+            // Auto-start if configured
             if (this.config.autoStart) {
                 this.init();
             }
+        }
+        
+        mergeConfig(defaults, userConfig) {
+            const merged = { ...defaults };
+            
+            Object.keys(userConfig).forEach(key => {
+                if (typeof userConfig[key] === 'object' && 
+                    userConfig[key] !== null && 
+                    !Array.isArray(userConfig[key])) {
+                    merged[key] = { ...defaults[key], ...userConfig[key] };
+                } else {
+                    merged[key] = userConfig[key];
+                }
+            });
+            
+            return merged;
         }
         
         async init() {
@@ -563,6 +802,16 @@
             try {
                 // Initialize core components
                 await this.initializeComponents();
+                
+                // Initialize BlockInspect module
+                BlockInspectModule.init(this.config, {
+                    onTrigger: (type, details) => {
+                        this.reportDetection(type, details);
+                        if (this.config.onBlockInspectTrigger) {
+                            this.config.onBlockInspectTrigger(type, details);
+                        }
+                    }
+                });
                 
                 // Start protection systems
                 this.backupOriginalFunctions();
@@ -575,7 +824,7 @@
                 await this.fetchServerConfig();
                 
                 this.state.isActive = true;
-                this.log('AntidebugJS++ initialized successfully');
+                this.log('AntidebugJS++ v4.0.0 initialized successfully');
                 
             } catch (error) {
                 this.handleError('Initialization failed', error);
@@ -762,7 +1011,6 @@
             const scripts = document.querySelectorAll('script[src]');
             scripts.forEach(script => {
                 if (script.src.includes('antidebug') && script.dataset.integrity) {
-                    // In a real implementation, you would verify the script integrity
                     this.reportDetection('script_integrity_check', `Script integrity verified: ${script.src}`);
                 }
             });
@@ -777,7 +1025,7 @@
             }
             
             const elapsed = performance.now() - start;
-            const expectedTime = 50; // Baseline expectation
+            const expectedTime = 50;
             
             if (elapsed > expectedTime * 2) {
                 this.reportDetection('performance_throttling', `Execution time: ${elapsed}ms (expected: ~${expectedTime}ms)`);
@@ -797,44 +1045,15 @@
         }
         
         setupEventListeners() {
-            // Context menu blocking
-            if (this.config.blockRightClick) {
-                const contextMenuListener = (e) => {
-                    e.preventDefault();
-                    this.reportDetection('context_menu_blocked', 'Right-click context menu blocked');
-                };
-                document.addEventListener('contextmenu', contextMenuListener);
-                this.eventListeners.set('contextmenu', contextMenuListener);
-            }
+            // Mouse movement analysis for automation detection
+            let mouseEvents = 0;
+            const mouseListener = () => mouseEvents++;
+            document.addEventListener('mousemove', mouseListener);
+            this.eventListeners.set('mousemove', mouseListener);
             
-            // Key combination detection
-            const keyListener = (e) => {
-                const combinations = [
-                    { key: 'F12' },
-                    { key: 'I', ctrl: true, shift: true },
-                    { key: 'J', ctrl: true, shift: true },
-                    { key: 'C', ctrl: true, shift: true },
-                    { key: 'U', ctrl: true },
-                    { key: 'S', ctrl: true }
-                ];
-                
-                combinations.forEach(combo => {
-                    if (e.key === combo.key && 
-                        (!combo.ctrl || e.ctrlKey) && 
-                        (!combo.shift || e.shiftKey) &&
-                        (!combo.alt || e.altKey)) {
-                        
-                        if (this.config.blockKeyboardShortcuts) {
-                            e.preventDefault();
-                        }
-                        
-                        this.reportDetection('forbidden_key_combination', `Key combination: ${combo.key}${combo.ctrl ? ' +Ctrl' : ''}${combo.shift ? ' +Shift' : ''}`);
-                    }
-                });
-            };
-            
-            document.addEventListener('keydown', keyListener);
-            this.eventListeners.set('keydown', keyListener);
+            setTimeout(() => {
+                this.reportDetection('mouse_activity', `Mouse events: ${mouseEvents}`);
+            }, 5000);
             
             // Page visibility changes
             const visibilityListener = () => {
@@ -946,56 +1165,59 @@
                 }
             }
             
-            // Report to server
-            try {
-                const response = await fetch(`${this.config.serverEndpoint}/report`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(detection)
-                });
-                
-                if (response.ok) {
-                    const action = await response.json();
-                    this.executeCountermeasure(action);
+            // Report to server if enabled
+            if (this.config.enableCountermeasures) {
+                try {
+                    const response = await fetch(`${this.config.serverEndpoint}/report`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(detection)
+                    });
+                    
+                    if (response.ok) {
+                        const action = await response.json();
+                        this.executeCountermeasure(action);
+                    }
+                } catch (error) {
+                    // Fallback to local countermeasures
+                    this.executeCountermeasure(this.determineLocalCountermeasure(type));
                 }
-            } catch (error) {
-                // Fallback to local countermeasures
-                this.executeCountermeasure(this.determineLocalCountermeasure(type));
             }
             
             // Check if maximum detections reached
             if (this.state.detectionCount >= this.config.maxDetections) {
-                this.executeCountermeasure({ action: 'compromise', severity: 'critical' });
+                this.executeCountermeasure({ action: COUNTERMEASURE_ACTIONS.COMPROMISE, severity: SEVERITY_LEVELS.CRITICAL });
             }
         }
         
         determineLocalCountermeasure(type) {
             const severity = this.getThreatSeverity(type);
             
-            if (severity === 'high') {
-                return { action: 'redirect_trap', severity: 'high' };
-            } else if (severity === 'medium') {
-                return { action: 'cpu_flood', severity: 'medium' };
-            } else {
-                return { action: 'freeze', severity: 'low' };
+            switch (severity) {
+                case SEVERITY_LEVELS.HIGH:
+                    return { action: COUNTERMEASURE_ACTIONS.REDIRECT_TRAP, severity };
+                case SEVERITY_LEVELS.MEDIUM:
+                    return { action: COUNTERMEASURE_ACTIONS.CPU_FLOOD, severity };
+                default:
+                    return { action: COUNTERMEASURE_ACTIONS.FREEZE, severity: SEVERITY_LEVELS.LOW };
             }
         }
         
         getThreatSeverity(type) {
-            const highThreats = ['injection', 'tampermonkey', 'code_integrity', 'automation'];
+            const highThreats = ['injection', 'tampermonkey', 'code_integrity', 'automation', 'block_inspect'];
             const mediumThreats = ['devtools', 'console', 'vm'];
             
             for (const threat of highThreats) {
-                if (type.includes(threat)) return 'high';
+                if (type.includes(threat)) return SEVERITY_LEVELS.HIGH;
             }
             
             for (const threat of mediumThreats) {
-                if (type.includes(threat)) return 'medium';
+                if (type.includes(threat)) return SEVERITY_LEVELS.MEDIUM;
             }
             
-            return 'low';
+            return SEVERITY_LEVELS.LOW;
         }
         
         executeCountermeasure(action) {
@@ -1004,26 +1226,29 @@
             this.log(`Executing countermeasure: ${action.action} (${action.severity})`);
             
             switch (action.action) {
-                case 'session_kill':
+                case COUNTERMEASURE_ACTIONS.SESSION_KILL:
                     this.killSession();
                     break;
-                case 'redirect_trap':
+                case COUNTERMEASURE_ACTIONS.REDIRECT_TRAP:
                     this.redirectToTrap();
                     break;
-                case 'cpu_flood':
+                case COUNTERMEASURE_ACTIONS.CPU_FLOOD:
                     this.floodCpu(action.severity);
                     break;
-                case 'freeze':
+                case COUNTERMEASURE_ACTIONS.FREEZE:
                     this.freezeExecution();
                     break;
-                case 'diversion':
+                case COUNTERMEASURE_ACTIONS.DIVERSION:
                     this.activateDiversion();
                     break;
-                case 'self_heal':
+                case COUNTERMEASURE_ACTIONS.SELF_HEAL:
                     this.selfHeal();
                     break;
-                case 'compromise':
+                case COUNTERMEASURE_ACTIONS.COMPROMISE:
                     this.markAsCompromised();
+                    break;
+                case COUNTERMEASURE_ACTIONS.BLOCK_INSPECT:
+                    BlockInspectModule.destroyPage();
                     break;
             }
         }
@@ -1046,14 +1271,14 @@
             
             // Redirect to safe page
             setTimeout(() => {
-                window.location.replace(this.config.safeRedirectUrl || '/');
+                window.location.replace(this.config.safeRedirectUrl);
             }, 100);
         }
         
         redirectToTrap() {
             const trapUrls = [
                 '/security-alert',
-                '/access-denied',
+                '/access-denied', 
                 '/system-maintenance',
                 '/honeypot-detected'
             ];
@@ -1062,14 +1287,15 @@
             window.location.replace(trapUrl);
         }
         
-        floodCpu(severity = 'medium') {
+        floodCpu(severity = SEVERITY_LEVELS.MEDIUM) {
             const intensities = {
-                low: 50000,
-                medium: 500000,
-                high: 2000000
+                [SEVERITY_LEVELS.LOW]: 50000,
+                [SEVERITY_LEVELS.MEDIUM]: 500000,
+                [SEVERITY_LEVELS.HIGH]: 2000000,
+                [SEVERITY_LEVELS.CRITICAL]: 5000000
             };
             
-            const iterations = intensities[severity] || intensities.medium;
+            const iterations = intensities[severity] || intensities[SEVERITY_LEVELS.MEDIUM];
             const delay = Math.random() * 3000;
             
             setTimeout(() => {
@@ -1160,6 +1386,9 @@
             });
             this.eventListeners.clear();
             
+            // Stop BlockInspect module
+            BlockInspectModule.stop();
+            
             // Trigger custom callback
             if (this.config.onCompromised) {
                 try {
@@ -1173,7 +1402,7 @@
                 }
             }
             
-            // Display warning
+            // Display warning if not in stealth mode
             if (!this.config.stealthMode) {
                 console.log('%c🚨 SECURITY BREACH DETECTED 🚨', 
                     'color: red; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);');
@@ -1182,7 +1411,10 @@
             }
         }
         
-        // Public API methods
+        // ========================================
+        // PUBLIC API METHODS
+        // ========================================
+        
         stop() {
             this.state.isActive = false;
             
@@ -1196,7 +1428,10 @@
             });
             this.eventListeners.clear();
             
-            this.log('AntidebugJS++ stopped');
+            // Stop BlockInspect module
+            BlockInspectModule.stop();
+            
+            this.log('AntidebugJS++ v4.0.0 stopped');
         }
         
         getStatus() {
@@ -1206,7 +1441,8 @@
                 detectionCount: this.state.detectionCount,
                 uptime: Date.now() - this.state.startTime,
                 sessionId: this.state.sessionId,
-                fingerprint: this.state.fingerprint
+                fingerprint: this.state.fingerprint,
+                version: '4.0.0'
             };
         }
         
@@ -1215,7 +1451,7 @@
         }
         
         updateConfig(newConfig) {
-            Object.assign(this.config, newConfig);
+            this.config = this.mergeConfig(this.config, newConfig);
             this.log('Configuration updated', newConfig);
         }
         
@@ -1223,10 +1459,35 @@
             this.reportDetection(`manual_${type}`, details);
         }
         
-        // Utility methods
+        getConfig() {
+            return { ...this.config };
+        }
+        
+        // BlockInspect specific methods
+        enableBlockInspect() {
+            this.config.enableBlockInspect = true;
+            BlockInspectModule.init(this.config, {
+                onTrigger: (type, details) => {
+                    this.reportDetection(type, details);
+                    if (this.config.onBlockInspectTrigger) {
+                        this.config.onBlockInspectTrigger(type, details);
+                    }
+                }
+            });
+        }
+        
+        disableBlockInspect() {
+            this.config.enableBlockInspect = false;
+            BlockInspectModule.stop();
+        }
+        
+        // ========================================
+        // UTILITY METHODS
+        // ========================================
+        
         log(...args) {
             if (!this.config.stealthMode && console && console.log) {
-                console.log('[AntidebugJS++]', ...args);
+                console.log('[AntidebugJS++ v4.0.0]', ...args);
             }
         }
         
@@ -1243,26 +1504,31 @@
         }
     }
     
-    // Static utility methods
+    // ========================================
+    // STATIC UTILITY METHODS
+    // ========================================
+    
     AntidebugJS.generateFingerprint = () => FingerprintEngine.generate();
     AntidebugJS.detectDevTools = () => DetectionEngine.detectDevToolsAdvanced();
     AntidebugJS.detectInjection = () => DetectionEngine.detectInjectionTools();
     AntidebugJS.detectVM = () => DetectionEngine.detectVirtualEnvironment();
     AntidebugJS.detectAutomation = () => DetectionEngine.detectAutomation();
     
-    // Version info
-    AntidebugJS.version = '2.0.0';
+    // Version and build info
+    AntidebugJS.version = '4.0.0';
     AntidebugJS.buildDate = new Date().toISOString();
     
     // Quick start method
     AntidebugJS.quickStart = (config = {}) => {
         return new AntidebugJS({
             aggressiveMode: true,
-            stealthMode: false,
+            stealthMode: true,
             enableWasm: true,
             enableFingerprinting: true,
+            enableBlockInspect: true,
             blockRightClick: true,
             blockKeyboardShortcuts: true,
+            blockTextSelection: true,
             ...config
         });
     };
@@ -1295,7 +1561,10 @@
     return AntidebugJS;
 });
 
-// Auto-initialize if config is found
+// ========================================
+// AUTO-INITIALIZATION
+// ========================================
+
 (function() {
     if (typeof window !== 'undefined') {
         // Check for global config
