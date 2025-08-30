@@ -457,7 +457,7 @@ function customDetectionLogic() {
 
 ## 📝 Changelog
 
-### v2.0.0
+### v4.0.0
 - Complete rewrite with hybrid architecture
 - Server-side management dashboard
 - Advanced detection algorithms
@@ -465,15 +465,20 @@ function customDetectionLogic() {
 - Polymorphic code engine
 - Real-time configuration updates
 
-### v1.5.0
+### v3.5.0
 - Added tampermonkey detection
 - Improved console detection
 - Performance optimizations
 - Bug fixes
 
 ## 📄 License
+![License: MIT (Non-Commercial)](https://img.shields.io/badge/license-MIT--NC-blue.svg)
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This script is distributed under a modified MIT license (non-commercial use only).  
+You are free to use, modify, and share it as long as it is **not for commercial purposes**.  
+Please give credit if you reuse the project. ❤️  
+See LICENSE file for details.
+Made by **SamK / Doctorchick**
 
 ## 🤝 Contributing
 
