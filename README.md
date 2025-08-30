@@ -1,7 +1,7 @@
 # AntidebugJS 3.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/Version-3.0.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/Version-3.5.0-blue.svg)]()
 [![Browser Support](https://img.shields.io/badge/Browser%20Support-Chrome%2C%20Firefox%2C%20Safari%2C%20Edge-green.svg)]()
 
 **Industrial-grade anti-debugging and code protection solution for JavaScript applications.**
