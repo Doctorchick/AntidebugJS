@@ -490,10 +490,9 @@ Made by **SamK / Doctorchick**
 
 ## 📞 Support
 
-- **Documentation**: [https://docs.antidebugjs-plus.com](https://docs.antidebugjs-plus.com)
-- **Issues**: [GitHub Issues](https://github.com/your-org/antidebugjs-plus/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-org/antidebugjs-plus/discussions)
-- **Email**: support@antidebugjs-plus.com
+- **Issues**: [GitHub Issues](https://github.com/Doctorchick/AntidebugJS/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Doctorchick/AntidebugJS/discussions)
+- **Email**: sam@kurugane.com
 
 ## ⭐ Star History
 
