@@ -591,8 +591,13 @@ debug.on('detection', (event) => {
 ```
 
 ## 📄 License
+![License: MIT (Non-Commercial)](https://img.shields.io/badge/license-MIT--NC-blue.svg)
 
-MIT License - see LICENSE file for details.
+This script is distributed under a modified MIT license (non-commercial use only).  
+You are free to use, modify, and share it as long as it is **not for commercial purposes**.  
+Please give credit if you reuse the project. ❤️  
+See LICENSE file for details.
+Made by **SamK / Doctorchick**
 
 ## 🤝 Contributing
 
