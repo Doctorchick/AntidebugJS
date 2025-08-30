@@ -1,6 +1,8 @@
-# 🛡️ AntidebugJS++ v2.0.0
+# 🛡️ AntidebugJS++ v4.0.0
 
-**Military-Grade Anti-Debug Protection System with Server-Side Management**
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/Version-4.0.0-blue.svg)]()
+[![Browser Support](https://img.shields.io/badge/Browser%20Support-Chrome%2C%20Firefox%2C%20Safari%2C%20Edge-green.svg)]()
 
 AntidebugJS++ is an advanced, hybrid client-server anti-debugging solution designed to protect web applications from reverse engineering, debugging, and malicious script injection. It combines cutting-edge detection algorithms, offensive countermeasures, and real-time server management.
 
