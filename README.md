@@ -1,624 +1,497 @@
-# AntidebugJS 3.0
+# 🛡️ AntidebugJS++ v2.0.0
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/Version-3.5.0-blue.svg)]()
-[![Browser Support](https://img.shields.io/badge/Browser%20Support-Chrome%2C%20Firefox%2C%20Safari%2C%20Edge-green.svg)]()
+**Military-Grade Anti-Debug Protection System with Server-Side Management**
 
-**Industrial-grade anti-debugging and code protection solution for JavaScript applications.**
+AntidebugJS++ is an advanced, hybrid client-server anti-debugging solution designed to protect web applications from reverse engineering, debugging, and malicious script injection. It combines cutting-edge detection algorithms, offensive countermeasures, and real-time server management.
 
-AntidebugJS is a comprehensive, single-file solution designed to protect your JavaScript applications from reverse engineering, debugging, and unauthorized analysis. It combines advanced detection techniques, intelligent reactions, and stealth capabilities to provide robust protection against various attack vectors.
+## 🚀 Features
 
-## 🚀 Quick Start
+### Client-Side Protection
+- **Advanced DevTools Detection**: Multiple detection vectors including timing analysis, dimension checks, and console traps
+- **Script Injection Detection**: Tampermonkey, Greasemonkey, browser extensions, and userscript detection
+- **Headless Browser Detection**: Puppeteer, Selenium, PhantomJS, and other automation tool detection
+- **Virtual Machine Detection**: Hardware fingerprinting and environment analysis
+- **Code Integrity Monitoring**: Runtime code modification detection with self-healing capabilities
+- **WebAssembly Protection**: Encrypted critical functions executed in WASM environment
+- **Polymorphic Engine**: Continuously mutating code to prevent static analysis
 
-### Basic Usage
+### Server-Side Management
+- **Real-Time Dashboard**: Web-based admin panel with live monitoring
+- **Centralized Logging**: All detections logged with detailed analytics
+- **Dynamic Configuration**: Real-time client configuration updates
+- **IP Banning System**: Automatic and manual IP blacklisting
+- **2FA Authentication**: Secure admin access with time-based OTP
+- **RESTful API**: Complete API for integration and automation
 
+### Offensive Countermeasures
+- **Session Termination**: Immediate session invalidation and cleanup
+- **Redirect Traps**: Decoy pages for detected attackers
+- **CPU Flooding**: Resource exhaustion attacks against debuggers
+- **Execution Freezing**: Strategic delays to disrupt analysis
+- **Data Diversion**: Fake API responses and honeypot data
+- **Self-Healing**: Automatic restoration of modified code
+
+## Comparison with Competitors
+
+| Feature | AntidebugJS++ | jscrambler | JSDefender | PackerJS |
+|---------|---------------|------------|------------|----------|
+| Real-time Detection | ✅ | ❌ | ❌ | ❌ |
+| Server Dashboard | ✅ | ✅ | ❌ | ❌ |
+| WebAssembly Integration | ✅ | ✅ | ❌ | ❌ |
+| Polymorphic Engine | ✅ | ❌ | ❌ | ❌ |
+| Open Source | ✅ | ❌ | ❌ | ✅ |
+| Custom Countermeasures | ✅ | ✅ | ❌ | ❌ |
+| Multi-detection Methods | ✅ | ✅ | ✅ | ❌ |
+
+## 📦 Installation
+
+### NPM Installation
+```bash
+npm install antidebugjs-plus
+```
+
+### CDN Usage
+```html
+<script src="https://cdn.jsdelivr.net/npm/antidebugjs-plus@2.0.0/dist/antidebug-plus.bundle.min.js"></script>
+```
+
+### Manual Installation
+1. Download the latest release
+2. Include the bundle in your project
+3. Set up the server component
+
+## 🔧 Quick Start
+
+### Client-Side Implementation
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="antidebugjs.min.js"></script>
+    <script src="antidebug-plus.bundle.js"></script>
+    <script>
+        // Basic setup
+        const antidebug = new AntidebugJS({
+            serverEndpoint: '/api/antidebug',
+            clientId: 'my-web-app',
+            aggressiveMode: true,
+            stealthMode: false
+        });
+    </script>
 </head>
 <body>
-    <script>
-        // Simple initialization with default settings
-        const protection = new AntidebugJS();
-        protection.start();
-    </script>
+    <!-- Your content -->
 </body>
 </html>
 ```
 
-### JSON Configuration
-
-```html
-<script data-antidebug-config type="application/json">
-{
-    "level": "balanced",
-    "detectionMethods": {
-        "devtools": { "enabled": true, "sensitivity": 0.8, "interval": 1000 },
-        "console": { "enabled": true, "sensitivity": 0.9, "interval": 500 }
-    },
-    "reactions": {
-        "onDetection": [
-            { "type": "log", "severity": "warn" },
-            { "type": "callback", "function": "myDetectionHandler" }
-        ]
-    }
-}
-</script>
-```
-
-### Preset-based Initialization
-
+### Server-Side Setup
 ```javascript
-// Stealth mode - maximum protection
-const stealth = AntidebugJS.create('stealth');
+const express = require('express');
+const AntidebugServer = require('antidebugjs-plus/server');
 
-// Balanced mode - performance/protection balance
-const balanced = AntidebugJS.create('balanced');
+const app = express();
 
-// Aggressive mode - strong protection with reactions
-const aggressive = AntidebugJS.create('aggressive', {
-    reactions: {
-        onDetection: [
-            { type: 'redirect', url: '/blocked.html' }
-        ]
-    }
+// Initialize AntidebugJS++ server
+const antidebugServer = new AntidebugServer({
+    port: 3001,
+    adminPassword: 'your-secure-password',
+    jwtSecret: 'your-jwt-secret',
+    enableRateLimit: true
 });
 
-stealth.start();
+// Serve admin dashboard
+app.use('/admin', express.static('node_modules/antidebugjs-plus/admin'));
+
+// Start server
+antidebugServer.start();
 ```
 
-## 🔧 Configuration
+## ⚙️ Configuration Options
 
-### Detection Methods
-
-| Method | Description | Default Sensitivity | Default Interval |
-|--------|-------------|-------------------|------------------|
-| `devtools` | DevTools timing analysis | 0.8 | 1000ms |
-| `console` | Console access detection | 0.9 | 500ms |
-| `timing` | Advanced timing analysis | 0.7 | 2000ms |
-| `extensions` | Browser extension detection | 0.6 | 3000ms |
-| `headless` | Headless browser detection | 0.8 | 5000ms |
-| `behavior` | Behavioral analysis | 0.5 | 10000ms |
-
-### Reaction Types
-
-| Type | Description | Parameters |
-|------|-------------|------------|
-| `log` | Console logging | `severity`: 'info', 'warn', 'error' |
-| `callback` | Custom function execution | `function`: callback function |
-| `obfuscate` | Code obfuscation | None |
-| `slowdown` | Performance degradation | None |
-| `corrupt` | Data corruption | None |
-| `redirect` | Page redirection | `url`: target URL |
-
-### Complete Configuration Schema
-
-```json
-{
-  "level": "balanced",
-  "detectionMethods": {
-    "devtools": {
-      "enabled": true,
-      "sensitivity": 0.8,
-      "interval": 1000
-    },
-    "console": {
-      "enabled": true,
-      "sensitivity": 0.9,
-      "interval": 500
-    },
-    "timing": {
-      "enabled": true,
-      "sensitivity": 0.7,
-      "interval": 2000
-    },
-    "extensions": {
-      "enabled": true,
-      "sensitivity": 0.6,
-      "interval": 3000
-    },
-    "headless": {
-      "enabled": true,
-      "sensitivity": 0.8,
-      "interval": 5000
-    },
-    "behavior": {
-      "enabled": false,
-      "sensitivity": 0.5,
-      "interval": 10000
-    }
-  },
-  "reactions": {
-    "onDetection": [
-      { "type": "log", "severity": "warn" },
-      { "type": "callback", "function": null }
-    ],
-    "escalation": {
-      "enabled": true,
-      "steps": [
-        { "threshold": 3, "actions": ["obfuscate", "slowdown"] },
-        { "threshold": 5, "actions": ["corrupt", "redirect"] }
-      ]
-    }
-  },
-  "obfuscation": {
-    "enabled": true,
-    "stringEncryption": true,
-    "controlFlowFlattening": false,
-    "deadCodeInjection": true
-  },
-  "stealth": {
-    "hideFromDevtools": true,
-    "antiHooking": true,
-    "polymorphic": false
-  },
-  "telemetry": {
-    "enabled": false,
-    "endpoint": null,
-    "apiKey": null
-  }
-}
-```
-
-## 🛡️ Features
-
-### Advanced Detection Capabilities
-
-#### DevTools Detection
-- **Timing-based analysis**: Measures execution time differences when DevTools is open
-- **Multiple measurement points**: Uses 5 different timing tests for accuracy
-- **Variance analysis**: Detects timing inconsistencies caused by debugging
-- **Adaptive sensitivity**: Adjustable threshold based on environment
-
-#### Console Access Detection
-- **Hook detection**: Identifies modified console functions
-- **Responsiveness testing**: Measures console operation timing
-- **Function integrity**: Verifies native code signatures
-- **Access pattern analysis**: Monitors unusual console usage
-
-#### Advanced Timing Analysis
-- **Multi-layered testing**: Combines execution, rendering, and memory tests
-- **Rendering performance**: Canvas drawing performance analysis
-- **Memory pressure testing**: Heap allocation monitoring
-- **Statistical analysis**: Variance and anomaly detection
-
-#### Browser Extensions Detection
-- **Developer tool extensions**: React, Vue, Redux, Angular DevTools
-- **Userscript managers**: Tampermonkey, Greasemonkey
-- **Security extensions**: Ad blockers, privacy tools
-- **Custom extension detection**: Extensible detection framework
-
-#### Headless Browser Detection
-- **Puppeteer detection**: Multiple Puppeteer-specific indicators
-- **Selenium detection**: WebDriver and automation signatures
-- **PhantomJS detection**: Legacy headless browser identification
-- **Environment analysis**: Missing APIs and unusual configurations
-
-#### Behavioral Analysis
-- **User interaction patterns**: Mouse movement, clicks, keyboard input
-- **Timing entropy**: Randomness analysis of user actions
-- **Frequency analysis**: Unusual interaction rates
-- **Machine learning inspired**: Anomaly scoring algorithms
-
-### Intelligent Reaction System
-
-#### Graduated Response
-- **Escalation levels**: Progressive response based on detection count
-- **Threshold-based actions**: Configurable reaction triggers
-- **Multi-vector reactions**: Combine different countermeasures
-- **Adaptive responses**: Learn from previous detections
-
-#### Protection Mechanisms
-- **Code obfuscation**: Runtime string encryption and dead code injection
-- **Performance degradation**: Subtle slowdown to frustrate attackers
-- **Data corruption**: Selective data poisoning
-- **Page redirection**: Immediate removal from protected content
-
-### Stealth Operations
-
-#### Anti-Detection
-- **Function name obfuscation**: Hide constructor and method names
-- **Anti-hooking protection**: Detect and prevent function modifications
-- **Polymorphic behavior**: Change detection patterns over time
-- **Silent operation**: Minimal console output and error handling
-
-#### Code Protection
-- **Runtime obfuscation**: Dynamic code transformation
-- **String encryption**: Base64 and XOR string protection
-- **Control flow obfuscation**: Complex execution paths
-- **Integrity monitoring**: Detect code modifications
-
-## 📊 API Reference
-
-### Constructor
-
+### Client Configuration
 ```javascript
-const protection = new AntidebugJS(config);
-```
-
-### Methods
-
-#### `start()`
-Begins protection monitoring
-```javascript
-protection.start();
-```
-
-#### `stop()`
-Stops all protection activities
-```javascript
-protection.stop();
-```
-
-#### `updateConfig(newConfig)`
-Updates configuration dynamically
-```javascript
-protection.updateConfig({
-  detectionMethods: {
-    devtools: { sensitivity: 1.0 }
-  }
-});
-```
-
-#### `getStatus()`
-Returns current protection status
-```javascript
-const status = protection.getStatus();
-// Returns: { active: true, detections: {...}, config: "balanced", methods: [...] }
-```
-
-### Events
-
-#### `on(event, callback)`
-Listen for protection events
-```javascript
-protection.on('detection', (event) => {
-  console.log('Detection:', event.method, event.confidence);
-});
-
-protection.on('started', () => {
-  console.log('Protection started');
-});
-
-protection.on('stopped', () => {
-  console.log('Protection stopped');
-});
-```
-
-## 🎯 Use Cases
-
-### Web Application Protection
-```javascript
-// E-commerce fraud prevention
-const protection = AntidebugJS.create('aggressive', {
-  reactions: {
-    onDetection: [
-      { type: 'log', severity: 'error' },
-      { type: 'callback', function: reportSuspiciousActivity }
-    ],
-    escalation: {
-      enabled: true,
-      steps: [
-        { threshold: 2, actions: ['obfuscate'] },
-        { threshold: 4, actions: ['redirect'] }
-      ]
-    }
-  },
-  telemetry: {
-    enabled: true,
-    endpoint: '/api/security-events',
-    apiKey: 'your-api-key'
-  }
-});
-
-function reportSuspiciousActivity(event) {
-  fetch('/api/fraud-alert', {
-    method: 'POST',
-    body: JSON.stringify({
-      type: 'debugging_attempt',
-      details: event,
-      timestamp: Date.now()
-    })
-  });
-}
-```
-
-### Gaming Anti-Cheat
-```javascript
-// Browser game protection
-const gameProtection = AntidebugJS.create('stealth', {
-  detectionMethods: {
-    behavior: { enabled: true, sensitivity: 0.8 },
-    timing: { enabled: true, sensitivity: 1.0 }
-  },
-  reactions: {
-    onDetection: [
-      { type: 'callback', function: flagCheatingAttempt },
-      { type: 'corrupt' }
-    ]
-  }
-});
-
-function flagCheatingAttempt(event) {
-  gameState.playerFlags.push({
-    type: 'anti_debug',
-    confidence: event.confidence,
-    timestamp: Date.now()
-  });
-}
-```
-
-### Content Protection
-```javascript
-// Educational content protection
-const contentProtection = AntidebugJS.create('balanced', {
-  reactions: {
-    onDetection: [
-      { type: 'obfuscate' },
-      { type: 'slowdown' }
-    ],
-    escalation: {
-      steps: [
-        { threshold: 1, actions: ['redirect'] }
-      ]
-    }
-  }
-});
-```
-
-## 🔧 Advanced Usage
-
-### Custom Detection Methods
-```javascript
-class CustomProtection extends AntidebugJS {
-  constructor(config) {
-    super(config);
+const antidebug = new AntidebugJS({
+    // Server connection
+    serverEndpoint: '/api/antidebug',        // API endpoint
+    clientId: 'my-app',                      // Unique client identifier
     
-    // Add custom detector
-    this.detectors.custom = this.customDetector.bind(this);
-  }
-  
-  customDetector() {
-    // Your custom detection logic
-    const suspicious = window.myApp && window.myApp.debugMode;
+    // Protection levels
+    aggressiveMode: false,                   // Enable aggressive countermeasures
+    stealthMode: true,                       // Hide console messages
     
-    return {
-      detected: suspicious,
-      confidence: suspicious ? 1.0 : 0,
-      metadata: { debugMode: suspicious }
-    };
-  }
-}
+    // Feature toggles
+    enableWasm: true,                        // Use WebAssembly protection
+    enableFingerprinting: true,              // Generate device fingerprints
+    blockRightClick: false,                  // Block context menu
+    blockKeyboardShortcuts: true,            // Block dev shortcuts
+    
+    // Timing configuration
+    checkInterval: 5000,                     // Detection cycle interval (ms)
+    mutationInterval: 30000,                 // Code mutation interval (ms)
+    maxDetections: 10,                       // Max detections before lockdown
+    
+    // Callbacks
+    onDetection: (detection) => {            // Custom detection handler
+        console.log('Threat detected:', detection);
+    },
+    onCompromised: (info) => {               // System compromised handler
+        console.log('System compromised:', info);
+    },
+    onError: (message, error) => {           // Error handler
+        console.error('AntidebugJS++ error:', message, error);
+    }
+});
 ```
 
-### Integration with Frameworks
+### Server Configuration
+```javascript
+const server = new AntidebugServer({
+    // Server settings
+    port: 3001,
+    jwtSecret: 'your-256-bit-secret',
+    adminPassword: 'secure-admin-password',
+    twoFactorSecret: 'base32-2fa-secret',
+    
+    // Security settings
+    enableRateLimit: true,
+    enableCors: true,
+    allowedOrigins: ['https://yourdomain.com'],
+    
+    // Behavior settings
+    autoBlacklist: true,
+    maxDetectionsPerIP: 50,
+    sessionTimeout: 3600000
+});
+```
 
-#### React Integration
+## 🔌 API Reference
+
+### Client API
+
+#### Core Methods
+```javascript
+// Initialize protection
+antidebug.init();
+
+// Stop protection
+antidebug.stop();
+
+// Get current status
+const status = antidebug.getStatus();
+
+// Get detection history
+const history = antidebug.getDetectionHistory();
+
+// Update configuration
+antidebug.updateConfig({ aggressiveMode: true });
+
+// Manual detection trigger
+antidebug.triggerManualDetection('custom_threat', 'Details');
+```
+
+#### Static Utilities
+```javascript
+// Generate device fingerprint
+const fingerprint = await AntidebugJS.generateFingerprint();
+
+// Run specific detections
+const devToolsResult = await AntidebugJS.detectDevTools();
+const injectionResult = AntidebugJS.detectInjection();
+const vmResult = AntidebugJS.detectVM();
+const automationResult = AntidebugJS.detectAutomation();
+
+// Quick start with defaults
+const antidebug = AntidebugJS.quickStart();
+```
+
+### Server API
+
+#### Authentication Endpoints
+- `POST /api/auth/login` - Admin login
+- `POST /api/auth/verify-2fa` - 2FA verification
+- `POST /api/auth/setup-2fa` - Setup 2FA
+
+#### Detection Endpoints
+- `POST /api/antidebug/report` - Report detection (client)
+- `GET /api/antidebug/config` - Get client configuration
+- `POST /api/antidebug/action` - Trigger client action
+
+#### Admin Endpoints
+- `GET /api/admin/dashboard` - Dashboard data
+- `GET /api/admin/detections` - Detection history
+- `GET /api/admin/sessions` - Active sessions
+- `POST /api/admin/ban-ip` - Ban IP address
+- `DELETE /api/admin/ban-ip` - Unban IP address
+- `PUT /api/admin/client-config` - Update client configuration
+- `GET /api/admin/statistics` - Get statistics
+
+## 🎯 Advanced Usage
+
+### Express.js Middleware
+```javascript
+const express = require('express');
+const { AntidebugJS } = require('antidebugjs-plus');
+
+const app = express();
+
+// Auto-inject AntidebugJS++ into HTML responses
+app.use(AntidebugJS.middleware({
+    aggressiveMode: true,
+    clientId: 'express-app'
+}));
+```
+
+### React Integration
 ```javascript
 import { useEffect } from 'react';
+import AntidebugJS from 'antidebugjs-plus';
 
-function useAntidebug(config = {}) {
-  useEffect(() => {
-    const protection = AntidebugJS.create('balanced', config);
-    protection.start();
-    
-    return () => protection.stop();
-  }, []);
+function App() {
+    useEffect(() => {
+        const antidebug = new AntidebugJS({
+            serverEndpoint: process.env.REACT_APP_ANTIDEBUG_ENDPOINT,
+            clientId: 'react-app',
+            onDetection: (detection) => {
+                // Handle detection in React app
+                console.warn('Security threat detected:', detection);
+            }
+        });
+
+        return () => antidebug.stop();
+    }, []);
+
+    return <div>Your React App</div>;
 }
+```
 
-// Usage in component
-function MyComponent() {
-  useAntidebug({
-    reactions: {
-      onDetection: [{ type: 'log', severity: 'warn' }]
+### Vue.js Integration
+```javascript
+// plugins/antidebug.js
+import AntidebugJS from 'antidebugjs-plus';
+
+export default {
+    install(Vue, options) {
+        const antidebug = new AntidebugJS(options);
+        
+        Vue.prototype.$antidebug = antidebug;
+        Vue.antidebug = antidebug;
     }
-  });
-  
-  return <div>Protected Content</div>;
-}
-```
-
-#### Vue Integration
-```javascript
-// Vue plugin
-const AntidebugPlugin = {
-  install(app, options = {}) {
-    const protection = AntidebugJS.create('balanced', options);
-    app.config.globalProperties.$antidebug = protection;
-    
-    app.mixin({
-      beforeCreate() {
-        if (!this.$options.antidebug) return;
-        protection.start();
-      },
-      beforeUnmount() {
-        protection.stop();
-      }
-    });
-  }
 };
+
+// main.js
+import AntiDebugPlugin from './plugins/antidebug';
+
+Vue.use(AntiDebugPlugin, {
+    serverEndpoint: '/api/antidebug',
+    clientId: 'vue-app'
+});
 ```
 
-## 📈 Performance Considerations
-
-### Impact Analysis
-- **Memory footprint**: ~50KB compressed
-- **CPU overhead**: <5% in balanced mode
-- **Network overhead**: <1KB/hour with telemetry
-- **Initialization time**: <50ms
-
-### Optimization Tips
-1. **Adjust intervals**: Increase detection intervals for better performance
-2. **Selective methods**: Disable unnecessary detection methods
-3. **Sensitivity tuning**: Lower sensitivity reduces false positives
-4. **Telemetry batching**: Use larger batch sizes for telemetry
-
-### Performance Monitoring
+### Custom Detection Rules
 ```javascript
-const protection = AntidebugJS.create('balanced');
-
-protection.on('detection', (event) => {
-  console.log('Detection time:', event.metadata.executionTime);
+const antidebug = new AntidebugJS({
+    onDetection: (detection) => {
+        // Custom logic based on detection type
+        switch (detection.type) {
+            case 'devtools_open':
+                // Specific handling for DevTools
+                break;
+            case 'injection_detected':
+                // Specific handling for script injection
+                break;
+            default:
+                // Default handling
+        }
+    }
 });
 
-// Monitor memory usage
+// Add custom detection
 setInterval(() => {
-  if (performance.memory) {
-    console.log('Memory usage:', performance.memory.usedJSHeapSize);
-  }
-}, 30000);
-```
-
-## 🔐 Security Best Practices
-
-### Deployment Security
-1. **Obfuscation**: Always use code obfuscation in production
-2. **HTTPS only**: Never deploy over HTTP
-3. **CSP headers**: Implement Content Security Policy
-4. **API keys**: Rotate telemetry API keys regularly
-
-### Configuration Security
-```javascript
-// Secure configuration
-const secureConfig = {
-  level: 'stealth',
-  stealth: {
-    hideFromDevtools: true,
-    antiHooking: true,
-    polymorphic: true
-  },
-  obfuscation: {
-    enabled: true,
-    stringEncryption: true,
-    deadCodeInjection: true
-  },
-  reactions: {
-    escalation: {
-      enabled: true,
-      steps: [
-        { threshold: 1, actions: ['obfuscate'] },
-        { threshold: 2, actions: ['redirect'] }
-      ]
+    if (customThreatDetected()) {
+        antidebug.triggerManualDetection('custom_threat', 'Custom threat details');
     }
-  }
+}, 10000);
+```
+
+## 🔒 Security Best Practices
+
+### Server Hardening
+```javascript
+const server = new AntidebugServer({
+    // Use strong secrets
+    jwtSecret: crypto.randomBytes(32).toString('hex'),
+    adminPassword: generateSecurePassword(),
+    
+    // Enable all security features
+    enableRateLimit: true,
+    enableCors: true,
+    allowedOrigins: ['https://yourdomain.com'], // Specific domains only
+    
+    // Set reasonable limits
+    maxDetectionsPerIP: 20,
+    sessionTimeout: 1800000 // 30 minutes
+});
+```
+
+### Environment Variables
+```bash
+# .env file
+ANTIDEBUG_JWT_SECRET=your-256-bit-jwt-secret
+ANTIDEBUG_ADMIN_PASSWORD=your-secure-admin-password
+ANTIDEBUG_2FA_SECRET=your-base32-2fa-secret
+ANTIDEBUG_ALLOWED_ORIGINS=https://yourdomain.com,https://app.yourdomain.com
+ANTIDEBUG_PORT=3001
+```
+
+### HTTPS Configuration
+```javascript
+const https = require('https');
+const fs = require('fs');
+
+const options = {
+    key: fs.readFileSync('private-key.pem'),
+    cert: fs.readFileSync('certificate.pem')
 };
+
+const server = new AntidebugServer({ port: 3001 });
+https.createServer(options, server.app).listen(3001);
 ```
 
-### Monitoring and Alerting
+## 📊 Monitoring and Analytics
+
+### Dashboard Features
+- **Real-time Detection Feed**: Live view of all security events
+- **Threat Analytics**: Statistical analysis of attack patterns
+- **Geographic Mapping**: Location-based threat visualization
+- **Session Management**: Active session monitoring and control
+- **Configuration Management**: Dynamic client configuration
+- **IP Management**: Blacklist/whitelist administration
+
+### Custom Metrics
 ```javascript
-// Security event monitoring
-protection.on('detection', (event) => {
-  // Log security events
-  fetch('/api/security-log', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      event_type: 'anti_debug_detection',
-      method: event.method,
-      confidence: event.confidence,
-      user_agent: navigator.userAgent,
-      timestamp: Date.now()
-    })
-  });
+const antidebug = new AntidebugJS({
+    onDetection: (detection) => {
+        // Send to your analytics platform
+        analytics.track('security_threat_detected', {
+            type: detection.type,
+            severity: getThreatSeverity(detection.type),
+            timestamp: detection.timestamp,
+            fingerprint: detection.fingerprint
+        });
+    }
 });
 ```
 
-## 📋 Browser Compatibility
+## 🛠️ Development
 
-| Browser | Version | Support Level |
-|---------|---------|---------------|
-| Chrome | 60+ | Full |
-| Firefox | 55+ | Full |
-| Safari | 12+ | Full |
-| Edge | 79+ | Full |
-| IE | 11 | Limited |
+### Building from Source
+```bash
+git clone https://github.com/Doctorchick/AntidebugJS.git
+cd antidebugjs-plus
+npm install
+npm run build
+```
 
-### Feature Support Matrix
+### Running Tests
+```bash
+npm test                # Run all tests
+npm run test:watch      # Watch mode
+npm run test:coverage   # With coverage
+```
 
-| Feature | Chrome | Firefox | Safari | Edge |
-|---------|--------|---------|--------|------|
-| DevTools Detection | ✅ | ✅ | ✅ | ✅ |
-| Console Detection | ✅ | ✅ | ✅ | ✅ |
-| Timing Analysis | ✅ | ✅ | ⚠️ | ✅ |
-| Extension Detection | ✅ | ✅ | ❌ | ✅ |
-| Headless Detection | ✅ | ✅ | ✅ | ✅ |
-| Behavioral Analysis | ✅ | ✅ | ✅ | ✅ |
+### Development Mode
+```bash
+npm run dev             # Start development servers
+npm run server:dev      # Server only
+npm run client:dev      # Client only
+```
 
-## 🐛 Troubleshooting
+## 🔧 Customization
 
-### Common Issues
-
-#### False Positives
+### Custom Countermeasures
 ```javascript
-// Reduce sensitivity to minimize false positives
-const protection = AntidebugJS.create('balanced', {
-  detectionMethods: {
-    devtools: { sensitivity: 0.5 },
-    timing: { sensitivity: 0.4 }
-  }
-});
+class CustomAntidebug extends AntidebugJS {
+    executeCountermeasure(action) {
+        switch (action.action) {
+            case 'custom_action':
+                this.customCountermeasure();
+                break;
+            default:
+                super.executeCountermeasure(action);
+        }
+    }
+    
+    customCountermeasure() {
+        // Your custom countermeasure logic
+        console.log('Custom countermeasure executed');
+    }
+}
 ```
 
-#### Performance Issues
+### Custom Detection Algorithms
 ```javascript
-// Optimize for performance
-const optimized = AntidebugJS.create('balanced', {
-  detectionMethods: {
-    behavior: { enabled: false }, // Most CPU intensive
-    timing: { interval: 5000 },   // Less frequent checks
-    headless: { interval: 10000 } // Least critical
-  }
-});
-```
-
-#### Integration Problems
-```javascript
-// Debug mode for development
-const debug = new AntidebugJS({
-  level: 'balanced',
-  reactions: {
-    onDetection: [
-      { type: 'log', severity: 'info' } // Log only, no actions
-    ]
-  }
+const antidebug = new AntidebugJS({
+    onDetection: (detection) => {
+        // Add custom detection logic
+        if (customDetectionLogic()) {
+            antidebug.triggerManualDetection('custom_detection', 'Custom threat detected');
+        }
+    }
 });
 
-debug.on('detection', (event) => {
-  console.log('Debug detection:', event);
-});
+function customDetectionLogic() {
+    // Your custom detection algorithm
+    return suspiciousActivityDetected();
+}
 ```
+
+## ⚠️ Known Limitations
+
+- **Browser Compatibility**: Requires ES6+ support
+- **WASM Support**: Some older browsers may not support WebAssembly
+- **Performance Impact**: Intensive protection may affect performance
+- **False Positives**: Legitimate tools may trigger detections
+- **Legal Considerations**: Ensure compliance with local laws
+
+## 📝 Changelog
+
+### v2.0.0
+- Complete rewrite with hybrid architecture
+- Server-side management dashboard
+- Advanced detection algorithms
+- WebAssembly protection module
+- Polymorphic code engine
+- Real-time configuration updates
+
+### v1.5.0
+- Added tampermonkey detection
+- Improved console detection
+- Performance optimizations
+- Bug fixes
 
 ## 📄 License
-![License: MIT (Non-Commercial)](https://img.shields.io/badge/license-MIT--NC-blue.svg)
 
-This script is distributed under a modified MIT license (non-commercial use only).  
-You are free to use, modify, and share it as long as it is **not for commercial purposes**.  
-Please give credit if you reuse the project. ❤️  
-See LICENSE file for details.
-Made by **SamK / Doctorchick**
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📞 Support
 
-- Documentation: [https://antidebugjs.com/docs](https://antidebugjs.com/docs)
-- Issues: [https://github.com/antidebugjs/antidebug/issues](https://github.com/antidebugjs/antidebug/issues)
-- Discussions: [https://github.com/antidebugjs/antidebug/discussions](https://github.com/antidebugjs/antidebug/discussions)
+- **Documentation**: [https://docs.antidebugjs-plus.com](https://docs.antidebugjs-plus.com)
+- **Issues**: [GitHub Issues](https://github.com/your-org/antidebugjs-plus/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-org/antidebugjs-plus/discussions)
+- **Email**: support@antidebugjs-plus.com
 
-## 🔄 Changelog
+## ⭐ Star History
 
-### v3.0.0
-- Complete rewrite with TypeScript
-- Single-file implementation
-- JSON configuration support
-- Advanced behavioral analysis
-- Improved stealth capabilities
-- Enhanced performance optimization
+If this project helped you, please consider giving it a star on GitHub!
+
+---
+
+**⚠️ Disclaimer**: This tool is intended for legitimate security purposes only. Users are responsible for ensuring compliance with applicable laws and regulations. The authors are not responsible for any misuse of this software.
